@@ -23,9 +23,10 @@
  * A UTXO entry.
  *
  * Serialized format:
- * - VARINT((coinbase ? 1 : 0) | (height << 1))
+ * - VARINT((coinbase ? 1 : 0) + (coinstake ? 2 : 0) | (height << 2))
  * - the non-spent CTxOut (via CTxOutCompressor)
  */
+// [PINK] Changes from Peercoin: https://github.com/peercoin/peercoin/blob/master/src/main.h#L976
 class Coin
 {
 public:
@@ -35,31 +36,44 @@ public:
     //! whether containing transaction was a coinbase
     unsigned int fCoinBase : 1;
 
+    //! whether containing transaction was a coinstake
+    unsigned int fCoinStake : 2;
+
     //! at which height this containing transaction was included in the active block chain
     uint32_t nHeight : 31;
 
-    //! construct a Coin from a CTxOut and height/coinbase information.
-    Coin(CTxOut&& outIn, int nHeightIn, bool fCoinBaseIn) : out(std::move(outIn)), fCoinBase(fCoinBaseIn), nHeight(nHeightIn) {}
-    Coin(const CTxOut& outIn, int nHeightIn, bool fCoinBaseIn) : out(outIn), fCoinBase(fCoinBaseIn),nHeight(nHeightIn) {}
+    // transaction timestamp
+    uint32_t nTime;
+
+    //! construct a Coin from a CTxOut and height/coinbase/coinstake information.
+    Coin(CTxOut&& outIn, int nHeightIn, bool fCoinBaseIn, bool fCoinStakeIn, uint32_t nTimeIn) : out(std::move(outIn)), fCoinBase(fCoinBaseIn), nHeight(nHeightIn), fCoinStake(fCoinStakeIn ? 2 : 0), nTime(nTimeIn) {}
+    Coin(const CTxOut& outIn, int nHeightIn, bool fCoinBaseIn, bool fCoinStakeIn, uint32_t nTimeIn) : out(outIn), fCoinBase(fCoinBaseIn), nHeight(nHeightIn), fCoinStake(fCoinStakeIn ? 2 : 0), nTime(nTimeIn) {}
 
     void Clear() {
         out.SetNull();
         fCoinBase = false;
+        fCoinStake = false;
         nHeight = 0;
+        nTime = 0;
     }
 
     //! empty constructor
-    Coin() : fCoinBase(false), nHeight(0) { }
+    Coin() : fCoinBase(false), nHeight(0), fCoinStake(false), nTime(0) { }
 
     bool IsCoinBase() const {
         return fCoinBase;
     }
 
+    bool IsCoinStake() const {
+        return fCoinStake;
+    }
+
     template<typename Stream>
     void Serialize(Stream &s) const {
         assert(!IsSpent());
-        uint32_t code = nHeight * 2 + fCoinBase;
+        uint32_t code = nHeight * 4 + fCoinBase + fCoinStake;
         ::Serialize(s, VARINT(code));
+        ::Serialize(s, VARINT(nTime));
         ::Serialize(s, CTxOutCompressor(REF(out)));
     }
 
@@ -67,8 +81,10 @@ public:
     void Unserialize(Stream &s) {
         uint32_t code = 0;
         ::Unserialize(s, VARINT(code));
-        nHeight = code >> 1;
+        nHeight = code >> 2;
         fCoinBase = code & 1;
+        fCoinStake = code & 2;
+        ::Unserialize(s, VARINT(nTime));
         ::Unserialize(s, CTxOutCompressor(out));
     }
 

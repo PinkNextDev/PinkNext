@@ -11,8 +11,9 @@
 static const unsigned char pchIPv4[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff };
 static const unsigned char pchOnionCat[] = {0xFD,0x87,0xD8,0x7E,0xEB,0x43};
 
-// 0xFD + sha256("bitcoin")[0:5]
-static const unsigned char g_internal_prefix[] = { 0xFD, 0x6B, 0x88, 0xC0, 0x87, 0x24 };
+// [PINK] 0xFD + sha256("pinkcoin")[0:5]
+// [PINK] Check if correct (should be ok)
+static const unsigned char g_internal_prefix[] = { 0xFD, 0x9F, 0x8F, 0x58, 0xFD, 0xCB };
 
 CNetAddr::CNetAddr()
 {

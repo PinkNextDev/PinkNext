@@ -1443,7 +1443,7 @@ static void ThreadMapPort()
             }
         }
 
-        std::string strDesc = "Bitcoin " + FormatFullVersion();
+        std::string strDesc = "Pinkcoin " + FormatFullVersion();
 
         do {
 #ifndef UPNPDISCOVER_SUCCESS
@@ -1556,7 +1556,10 @@ void CConnman::ThreadDNSAddressSeed()
             std::vector<CNetAddr> vIPs;
             std::vector<CAddress> vAdd;
             ServiceFlags requiredServiceBits = GetDesirableServiceFlags(NODE_NONE);
-            std::string host = strprintf("x%x.%s", requiredServiceBits, seed);
+            // [PINK] Disable for now because Pinkcoin's official
+            // [PINK] nodes don't support that type of DNS naming.
+            // std::string host = strprintf("x%x.%s", requiredServiceBits, seed);
+            std::string host = seed;
             CNetAddr resolveSource;
             if (!resolveSource.SetInternal(host)) {
                 continue;

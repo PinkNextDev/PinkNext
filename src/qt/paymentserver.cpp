@@ -66,7 +66,7 @@ const char* BIP71_MIMETYPE_PAYMENTREQUEST = "application/bitcoin-paymentrequest"
 //
 static QString ipcServerName()
 {
-    QString name("BitcoinQt");
+    QString name("PinkcoinQt");
 
     // Append a simple hash of the datadir
     // Note that GetDataDir(true) returns a different path

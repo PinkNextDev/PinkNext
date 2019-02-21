@@ -10,6 +10,101 @@
 #include <primitives/block.h>
 #include <uint256.h>
 
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1104
+// [PINK] TODO: change it to support initial headers check
+uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake)
+{
+    assert(pindexLast != nullptr);
+
+    arith_uint256 bnStakeTarget = UintToArith256(params.posLimit);
+
+    if (params.IsFlashStake(pblock->nTime))
+        bnStakeTarget = UintToArith256(params.fposLimit);
+
+
+    arith_uint256 bnTargetLimit = fProofOfStake ? bnStakeTarget :  UintToArith256(params.powLimit);
+
+    const CBlockIndex* pindexPrev = GetLastBlockIndex(pindexLast, fProofOfStake);
+    if (pindexPrev->pprev == nullptr)
+        return bnTargetLimit.GetCompact(); // first block
+    const CBlockIndex* pindexPrevPrev = GetLastBlockIndex(pindexPrev->pprev, fProofOfStake);
+    if (pindexPrevPrev->pprev == nullptr)
+        return bnTargetLimit.GetCompact(); // second block
+
+
+    bool fFlashStake = false;
+    bool fFlashFlip = false;
+
+    int nTS;
+    nTS = params.nPowTargetSpacing;
+
+    if (fProofOfStake)
+    {
+        nTS = params.nPosTargetTimespan;
+
+        if (params.IsFlashStake(pblock->nTime))
+        {
+            if (!params.IsFlashStake(pindexPrev->nTime))
+                fFlashFlip = true;
+            nTS = params.nFposTargetTimespan;
+            fFlashStake = true;
+        } else {
+            if (params.IsFlashStake(pindexPrev->nTime))
+                fFlashFlip = true;
+        }
+    }
+
+
+    // [PINK] Target change every block
+    // [PINK] Retarget with exponential moving toward target spacing
+    arith_uint256 bnNew;
+    int64_t nInterval;
+    int64_t nActualSpacing;
+
+    if (fFlashFlip)
+    {
+        if (fFlashStake)
+        {
+            const CBlockIndex* pPrev = GetLastBlockIndex2(pindexPrev, true);
+            if (pPrev == nullptr)
+                return bnTargetLimit.GetCompact();
+            nActualSpacing = pPrev->GetBlockTime() - GetLastBlockIndex(pPrev, true)->GetBlockTime();
+            bnNew.SetCompact(pPrev->nBits);
+        }
+        else {
+            const CBlockIndex* pPrev = GetLastBlockIndex2(pindexPrev, false);
+            nActualSpacing = pPrev->GetBlockTime() - GetLastBlockIndex(pPrev, true)->GetBlockTime();
+            bnNew.SetCompact(pPrev->nBits);
+        }
+    } else {
+        bnNew.SetCompact(pindexPrev->nBits);
+        nActualSpacing = pindexPrev->GetBlockTime() - pindexPrevPrev->GetBlockTime();
+    }
+
+    if (pindexPrev->nHeight < params.V2104Height)
+    {
+        if (nActualSpacing < 0)
+            nActualSpacing = nTS;
+    }
+
+
+    if (fFlashStake)
+        nInterval = params.nFposTargetTimespan / (nTS);
+    else if (fProofOfStake)
+        nInterval = params.nPosTargetTimespan / (nTS);
+    else
+        nInterval = params.nPowTargetTimespan / (nTS);
+
+    bnNew *= ((nInterval - 1) * (nTS) + nActualSpacing + nActualSpacing);
+    bnNew /= ((nInterval + 1) * (nTS));
+
+    if (bnNew <= 0 || bnNew > bnTargetLimit)
+        bnNew = bnTargetLimit;
+
+    return bnNew.GetCompact();
+}
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
@@ -46,6 +141,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
 }
 
+// [PINK] TODO: replace it entairly
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params& params)
 {
     if (params.fPowNoRetargeting)

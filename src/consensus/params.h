@@ -48,6 +48,8 @@ struct BIP9Deployment {
  */
 struct Params {
     uint256 hashGenesisBlock;
+    // [PINK] nSubsidyHalvingInterval = nHalvingPoint*YEARLY_BLOCKCOUNT
+    // [PINK] YEARLY_BLOCKCOUNT = 423400 - number of blocks in a year
     int nSubsidyHalvingInterval;
     /* Block hash that is excepted from BIP16 enforcement */
     uint256 BIP16Exception;
@@ -58,6 +60,16 @@ struct Params {
     int BIP65Height;
     /** Block height at which BIP66 becomes active */
     int BIP66Height;
+
+    // [PINK] Dec 2017 bug fix
+    int V2104Height;
+    // [PINK] Dec 2017 bug fix: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2149
+    uint32_t V2104Time;
+    // [PINK] FPoS 2.0: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2241
+    uint32_t V220Time;
+    // [PINK] 51% attack prev change: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
+    uint32_t V221Time;
+
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
@@ -66,15 +78,51 @@ struct Params {
     uint32_t nRuleChangeActivationThreshold;
     uint32_t nMinerConfirmationWindow;
     BIP9Deployment vDeployments[MAX_VERSION_BITS_DEPLOYMENTS];
-    /** Proof of work parameters */
+    /** Proof of work and proof of stake parameters */
     uint256 powLimit;
+    // [PINK] Added PoS nad FPoS params
+    uint256 posLimit;
+    uint256 fposLimit;
     bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;
     int64_t nPowTargetTimespan;
+    // [PINK] Added PoS and FPoS params
+    int64_t nPosTargetSpacing;
+    int64_t nPosTargetTimespan;
+    int64_t nFposTargetSpacing;
+    int64_t nFposTargetTimespan;
     int64_t DifficultyAdjustmentInterval() const { return nPowTargetTimespan / nPowTargetSpacing; }
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L54
+    uint32_t nHour1;
+    uint32_t nHour2;
+    uint32_t nHour3;
+    uint32_t nHour4;
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1221
+    bool IsFlashStake(uint32_t nTime) const
+    {
+        time_t rawtime;
+        struct tm *ptm;
+
+        bool bIsFlash = false;
+
+        rawtime = nTime;
+        ptm = gmtime(&rawtime);
+        int nHour = ptm->tm_hour;
+        if (nHour == nHour1 || nHour == nHour2 || nHour == nHour3 || nHour == nHour4) {
+            bIsFlash = true;
+        }
+
+        return bIsFlash;
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L47
+    inline int64_t PastDrift(int64_t nTime) const { return nTime - 10 * 60; }   // up to 10 minutes from the past
+    inline int64_t FutureDrift(int64_t nTime) const { return nTime + 10 * 60; } // up to 10 minutes from the future
 };
 } // namespace Consensus
 

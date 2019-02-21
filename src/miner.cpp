@@ -14,6 +14,7 @@
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
 #include <hash.h>
+#include <crypto/scrypt.h>
 #include <net.h>
 #include <policy/feerate.h>
 #include <policy/policy.h>
@@ -26,20 +27,22 @@
 #include <validationinterface.h>
 
 #include <algorithm>
+#include <memory>
 #include <queue>
 #include <utility>
 
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1320
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
     int64_t nOldTime = pblock->nTime;
-    int64_t nNewTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+    int64_t nNewTime = std::max(pblock->GetBlockTime(), GetAdjustedTime());
 
-    if (nOldTime < nNewTime)
-        pblock->nTime = nNewTime;
+    pblock->nTime = nNewTime;
 
+    // [PINK] TODO: Remove it?
     // Updating time can change work required on testnet:
-    if (consensusParams.fPowAllowMinDifficultyBlocks)
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
+    // if (consensusParams.fPowAllowMinDifficultyBlocks)
+    //     pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
 
     return nNewTime - nOldTime;
 }
@@ -162,7 +165,8 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     // Fill in header
     pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
     UpdateTime(pblock, chainparams.GetConsensus(), pindexPrev);
-    pblock->nBits          = GetNextWorkRequired(pindexPrev, pblock, chainparams.GetConsensus());
+    // [PINK] Replace GetNextWorkRequired with GetNextTargetRequired
+    pblock->nBits          = GetNextTargetRequired(pindexPrev, pblock, chainparams.GetConsensus(), pblock->IsProofOfStake());
     pblock->nNonce         = 0;
     pblocktemplate->vTxSigOpsCost[0] = WITNESS_SCALE_FACTOR * GetLegacySigOpCount(*pblock->vtx[0]);
 

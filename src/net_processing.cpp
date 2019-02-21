@@ -33,7 +33,7 @@
 #include <memory>
 
 #if defined(NDEBUG)
-# error "Bitcoin cannot be compiled without assertions."
+# error "Pinkcoin cannot be compiled without assertions."
 #endif
 
 /** Expiration time for orphan transactions in seconds */
@@ -51,7 +51,8 @@ static constexpr int32_t MAX_OUTBOUND_PEERS_TO_PROTECT_FROM_DISCONNECT = 4;
 /** Timeout for (unprotected) outbound peers to sync to our chainwork, in seconds */
 static constexpr int64_t CHAIN_SYNC_TIMEOUT = 20 * 60; // 20 minutes
 /** How frequently to check for stale tips, in seconds */
-static constexpr int64_t STALE_CHECK_INTERVAL = 10 * 60; // 10 minutes
+// [PINK] ?? PoW time
+static constexpr int64_t STALE_CHECK_INTERVAL = 2 * 60; // 2 minutes
 /** How frequently to check for extra outbound peers and disconnect, in seconds */
 static constexpr int64_t EXTRA_PEER_CHECK_INTERVAL = 45;
 /** Minimum time an outbound-peer-eviction candidate must be connected for, in order to evict, in seconds */
@@ -1922,11 +1923,14 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         pfrom->nTimeOffset = nTimeOffset;
         AddTimeData(pfrom->addr, nTimeOffset);
 
+        // [PINK] Disable it for now because Pinkcoin still uses alert system
+        /*
         // If the peer is old enough to have the old alert system, send it the final alert.
         if (pfrom->nVersion <= 70012) {
-            CDataStream finalAlert(ParseHex("60010000000000000000000000ffffff7f00000000ffffff7ffeffff7f01ffffff7f00000000ffffff7f00ffffff7f002f555247454e543a20416c657274206b657920636f6d70726f6d697365642c2075706772616465207265717569726564004630440220653febd6410f470f6bae11cad19c48413becb1ac2c17f908fd0fd53bdc3abd5202206d0e9c96fe88d4a0f01ed9dedae2b6f9e00da94cad0fecaae66ecf689bf71b50"), SER_NETWORK, PROTOCOL_VERSION);
+            CDataStream finalAlert(ParseHex("PUT MESSAGE EHERE IN HEX"), SER_NETWORK, PROTOCOL_VERSION);
             connman->PushMessage(pfrom, CNetMsgMaker(nSendVersion).Make("alert", finalAlert));
         }
+        */
 
         // Feeler connections exist only to verify if address is online.
         if (pfrom->fFeeler) {
@@ -2851,6 +2855,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         for (unsigned int n = 0; n < nCount; n++) {
             vRecv >> headers[n];
             ReadCompactSize(vRecv); // ignore tx count; assume it is 0.
+            ReadCompactSize(vRecv); // [PINK] ignore sig count (size); assume it is 0.
         }
 
         // Headers received via a HEADERS message should be valid, and reflect

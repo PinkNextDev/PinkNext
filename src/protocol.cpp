@@ -41,6 +41,8 @@ const char *SENDCMPCT="sendcmpct";
 const char *CMPCTBLOCK="cmpctblock";
 const char *GETBLOCKTXN="getblocktxn";
 const char *BLOCKTXN="blocktxn";
+// [PINK] Add alert message
+const char *ALERT="alert";
 } // namespace NetMsgType
 
 /** All known message types. Keep this in the same order as the list of
@@ -73,6 +75,9 @@ const static std::string allNetMessageTypes[] = {
     NetMsgType::CMPCTBLOCK,
     NetMsgType::GETBLOCKTXN,
     NetMsgType::BLOCKTXN,
+    NetMsgType::BLOCKTXN,
+    // [PINK] Add alert message
+    NetMsgType::ALERT,
 };
 const static std::vector<std::string> allNetMessageTypesVec(allNetMessageTypes, allNetMessageTypes+ARRAYLEN(allNetMessageTypes));
 
@@ -131,9 +136,13 @@ bool CMessageHeader::IsValid(const MessageStartChars& pchMessageStartIn) const
 
 ServiceFlags GetDesirableServiceFlags(ServiceFlags services) {
     if ((services & NODE_NETWORK_LIMITED) && g_initial_block_download_completed) {
-        return ServiceFlags(NODE_NETWORK_LIMITED | NODE_WITNESS);
+        // [PINK] Disable segwit thing for now.
+        return ServiceFlags(NODE_NETWORK_LIMITED);
+        // return ServiceFlags(NODE_NETWORK_LIMITED | NODE_WITNESS);
     }
-    return ServiceFlags(NODE_NETWORK | NODE_WITNESS);
+    // [PINK] Disable segwit thing for now.
+    return ServiceFlags(NODE_NETWORK);
+    // return ServiceFlags(NODE_NETWORK | NODE_WITNESS);
 }
 
 void SetServiceFlagsIBDCache(bool state) {

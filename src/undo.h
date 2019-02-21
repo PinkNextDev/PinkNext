@@ -20,6 +20,7 @@
  *  zero. This is compatible with older versions which expect to see
  *  the transaction version there.
  */
+// [PINK] Changes from Peercoin: https://github.com/peercoin/peercoin/blob/master/src/main.h#L799
 class TxInUndoSerializer
 {
     const Coin* txout;
@@ -27,7 +28,8 @@ class TxInUndoSerializer
 public:
     template<typename Stream>
     void Serialize(Stream &s) const {
-        ::Serialize(s, VARINT(txout->nHeight * 2 + (txout->fCoinBase ? 1u : 0u)));
+        ::Serialize(s, VARINT(txout->nHeight * 4 + (txout->fCoinBase ? 1u : 0u) + (txout->fCoinStake ? 2u : 0u)));
+        ::Serialize(s, VARINT(txout->nTime));
         if (txout->nHeight > 0) {
             // Required to maintain compatibility with older undo format.
             ::Serialize(s, (unsigned char)0);
@@ -47,8 +49,12 @@ public:
     void Unserialize(Stream &s) {
         unsigned int nCode = 0;
         ::Unserialize(s, VARINT(nCode));
-        txout->nHeight = nCode / 2;
+        txout->nHeight = nCode / 4;
         txout->fCoinBase = nCode & 1;
+        txout->fCoinStake = nCode & 2;
+        uint32_t nTime = 0;
+        ::Unserialize(s, VARINT(nTime));
+        txout->nTime = nTime;
         if (txout->nHeight > 0) {
             // Old versions stored the version number for the last spend of
             // a transaction's outputs. Non-final spends were indicated with

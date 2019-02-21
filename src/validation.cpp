@@ -225,6 +225,10 @@ RecursiveMutex cs_main;
 BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
 CChain& chainActive = g_chainstate.chainActive;
 CBlockIndex *pindexBestHeader = nullptr;
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L44
+arith_uint256 nBaseStakeTrust = 0;
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L45
+int nBaseStakeTrustHeight = 0;
 Mutex g_best_block_mutex;
 std::condition_variable g_best_block_cv;
 uint256 g_best_block;
@@ -255,7 +259,7 @@ std::atomic_bool g_is_mempool_loaded{false};
 /** Constant stuff for coinbase transactions we create: */
 CScript COINBASE_FLAGS;
 
-const std::string strMessageMagic = "Bitcoin Signed Message:\n";
+const std::string strMessageMagic = "Pinkcoin Signed Message:\n";
 
 // Internal stuff
 namespace {
@@ -1081,7 +1085,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    if (!CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -1149,6 +1153,7 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
     return ReadRawBlockFromDisk(block, block_pos, message_start);
 }
 
+// [PINK] Old function replaced by two underneath
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
@@ -1159,6 +1164,60 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     CAmount nSubsidy = 50 * COIN;
     // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
     nSubsidy >>= halvings;
+    return nSubsidy;
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L992
+CAmount GetPoWBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
+{
+    CAmount nSubsidy = 0 * COIN;
+
+    if (nHeight == 1)
+    {
+        nSubsidy = 364800000 * COIN; // Pinkcoin Coinbase.
+    }
+
+    if (nHeight >= 17000)
+    {
+        int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+        // Force block reward to zero when right shift is undefined.
+        if (halvings >= 64)
+        {
+            return 0;
+        }
+
+        // Subsidy is cut in half every 846,800 blocks which will occur approximately every 2 years.
+        nSubsidy = (50 * COIN) >> halvings;
+    }
+
+    return nSubsidy;
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1013
+CAmount GetPoSBlockSubsidy(int nHeight, const Consensus::Params& consensusParams, uint32_t nTime)
+{
+    CAmount nSubsidy = 0 * COIN;
+
+    if (nHeight >= 16240)
+    {
+        int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+        // Force block reward to zero when right shift is undefined.
+        if (halvings >= 64)
+        {
+            return 0;
+        }
+
+        // Subsidy is cut in half every 846,800 blocks which will occur approximately every 2 years.
+        if (consensusParams.IsFlashStake(nTime))
+        {
+            nSubsidy = (150 * COIN) >> halvings;
+        }
+        else
+        {
+            nSubsidy = (100 * COIN) >> halvings;
+        }
+    }
+
     return nSubsidy;
 }
 
@@ -1675,7 +1734,7 @@ static bool WriteUndoDataForBlock(const CBlockUndo& blockundo, CValidationState&
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck() {
-    RenameThread("bitcoin-scriptch");
+    RenameThread("pinkcoin-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -1683,17 +1742,19 @@ VersionBitsCache versionbitscache GUARDED_BY(cs_main);
 
 int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
-    LOCK(cs_main);
-    int32_t nVersion = VERSIONBITS_TOP_BITS;
+    // [PINK] Temporary disable BIP 9 (Version bits).
+    // LOCK(cs_main);
+    // int32_t nVersion = VERSIONBITS_TOP_BITS;
 
-    for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
-        ThresholdState state = VersionBitsState(pindexPrev, params, static_cast<Consensus::DeploymentPos>(i), versionbitscache);
-        if (state == ThresholdState::LOCKED_IN || state == ThresholdState::STARTED) {
-            nVersion |= VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
-        }
-    }
+    // for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
+    //     ThresholdState state = VersionBitsState(pindexPrev, params, static_cast<Consensus::DeploymentPos>(i), versionbitscache);
+    //     if (state == ThresholdState::LOCKED_IN || state == ThresholdState::STARTED) {
+    //         nVersion |= VersionBitsMask(params, static_cast<Consensus::DeploymentPos>(i));
+    //     }
+    // }
 
-    return nVersion;
+    // return nVersion;
+    return 1;
 }
 
 /**
@@ -1712,6 +1773,7 @@ public:
     int Period(const Consensus::Params& params) const override { return params.nMinerConfirmationWindow; }
     int Threshold(const Consensus::Params& params) const override { return params.nRuleChangeActivationThreshold; }
 
+    // [PINK] I think that condition is not fullfiled before BIP 9 activation but it require checiking.
     bool Condition(const CBlockIndex* pindex, const Consensus::Params& params) const override
     {
         return ((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) &&
@@ -1876,8 +1938,12 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     // Now that the whole chain is irreversibly beyond that time it is applied to all blocks except the
     // two in the chain that violate it. This prevents exploiting the issue against nodes during their
     // initial block download.
-    bool fEnforceBIP30 = !((pindex->nHeight==91842 && pindex->GetBlockHash() == uint256S("0x00000000000a4d0a398161ffc163c503763b1f4360639393e0e4c8e300e0caec")) ||
-                           (pindex->nHeight==91880 && pindex->GetBlockHash() == uint256S("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
+    //----------------------------------------------------------------------------------------------
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1632
+    bool fEnforceBIP30 = true;
+    // bool fEnforceBIP30 = !((pindex->nHeight==91842 && pindex->GetBlockHash() == uint256S("0x00000000000a4d0a398161ffc163c503763b1f4360639393e0e4c8e300e0caec")) ||
+    //                        (pindex->nHeight==91880 && pindex->GetBlockHash() == uint256S("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
+    //----------------------------------------------------------------------------------------------
 
     // Once BIP34 activated it was not possible to create new duplicate coinbases and thus other than starting
     // with the 2 existing duplicate coinbase pairs, not possible to create overwriting txs.  But by the
@@ -1905,6 +1971,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     // future consensus change to do a new and improved version of BIP34 that
     // will actually prevent ever creating any duplicate coinbases in the
     // future.
+    // [PINK] Remove / change??
     static constexpr int BIP34_IMPLIES_BIP30_LIMIT = 1983702;
 
     // There is no potential to create a duplicate coinbase at block 209,921
@@ -2917,6 +2984,8 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
         pindexNew->BuildSkip();
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
+    // [PINK] TODO: Change GetBlockProof to work like GetBlockTrust
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2081
     pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == nullptr || pindexBestHeader->nChainWork < pindexNew->nChainWork)
@@ -3065,7 +3134,7 @@ static bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, 
 static bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, const Consensus::Params& consensusParams, bool fCheckPOW = true)
 {
     // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(), block.nBits, consensusParams)) /*&& block.HasPoWFlag()*/
         return state.DoS(50, false, REJECT_INVALID, "high-hash", false, "proof of work failed");
 
     return true;
@@ -3216,10 +3285,19 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
-    // Check proof of work
+    // Check proof of work / proof of stake
     const Consensus::Params& consensusParams = params.GetConsensus();
-    if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
-        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+    // [PINK] Hack: fix it somehow or at least rewrite GetNextTargetRequired in more optimal way :/
+    // [PINK] It's not possible to find out whether we are dealing wtih PoW or PoS block headers...
+    // [PINK] To fix it we need to add that info to headers
+    if (block.nBits != GetNextTargetRequired(pindexPrev, &block, consensusParams, false)) { // PoW check
+        if (block.nBits != GetNextTargetRequired(pindexPrev, &block, consensusParams, true)) { // PoS check
+            return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work / proof of stake");
+        }
+        // block.SetPoWFlag(false);
+    } else {
+        // block.SetPoWFlag(true);
+    }
 
     // Check against checkpoints
     if (fCheckpointsEnabled) {
@@ -3235,8 +3313,9 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
         return state.Invalid(false, REJECT_INVALID, "time-too-old", "block's timestamp is too early");
 
+    // [PINK] FutureDrift replaces nAdjustedTime + MAX_FUTURE_BLOCK_TIME
     // Check timestamp
-    if (block.GetBlockTime() > nAdjustedTime + MAX_FUTURE_BLOCK_TIME)
+    if (block.GetBlockTime() > consensusParams.FutureDrift(nAdjustedTime))
         return state.Invalid(false, REJECT_INVALID, "time-too-new", "block timestamp too far in the future");
 
     // Reject outdated version blocks when 95% (75% on testnet) of the network has upgraded:
@@ -3356,9 +3435,6 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
             return true;
         }
 
-        if (!CheckBlockHeader(block, state, chainparams.GetConsensus()))
-            return error("%s: Consensus::CheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
-
         // Get prev block index
         CBlockIndex* pindexPrev = nullptr;
         BlockMap::iterator mi = mapBlockIndex.find(block.hashPrevBlock);
@@ -3369,6 +3445,10 @@ bool CChainState::AcceptBlockHeader(const CBlockHeader& block, CValidationState&
             return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk");
         if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
             return error("%s: Consensus::ContextualCheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
+
+        // [PINK] Moved from above to be able to get PoW/PoS check in ContextualCheckBlockHeader before that. Is it OK??
+        if (!CheckBlockHeader(block, state, chainparams.GetConsensus()))
+            return error("%s: Consensus::CheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
 
         /* Determine if this block descends from any block which has been found
          * invalid (m_failed_blocks), then mark pindexPrev and any blocks between

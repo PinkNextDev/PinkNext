@@ -1010,7 +1010,7 @@ static UniValue pruneblockchain(const JSONRPCRequest& request)
     // Height value more than a billion is too high to be a block height, and
     // too low to be a block time (corresponds to timestamp from Sep 2001).
     if (heightParam > 1000000000) {
-        // Add a 2 hour buffer to include blocks which might have had old timestamps
+        // Add a 10 minutes buffer to include blocks which might have had old timestamps
         CBlockIndex* pindex = chainActive.FindEarliestAtLeast(heightParam - TIMESTAMP_WINDOW);
         if (!pindex) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Could not find block with at least the specified timestamp.");

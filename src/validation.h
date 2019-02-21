@@ -181,6 +181,11 @@ extern arith_uint256 nMinimumChainWork;
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;
 
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L44
+extern arith_uint256 nBaseStakeTrust;
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L45
+extern int nBaseStakeTrustHeight;
+
 /** Minimum disk space required - used in CheckDiskSpace() */
 static const uint64_t nMinDiskSpace = 52428800;
 
@@ -196,7 +201,10 @@ static const unsigned int MIN_BLOCKS_TO_KEEP = 288;
 /** Minimum blocks required to signal NODE_NETWORK_LIMITED */
 static const unsigned int NODE_NETWORK_LIMITED_MIN_BLOCKS = 288;
 
-static const signed int DEFAULT_CHECKBLOCKS = 6;
+//--------------------------------------------------------------------------------------------------
+// [PINK] ??
+static const signed int DEFAULT_CHECKBLOCKS = 6 * 4;
+//--------------------------------------------------------------------------------------------------
 static const unsigned int DEFAULT_CHECKLEVEL = 3;
 
 // Require that user allocate at least 550 MiB for block & undo files (blk???.dat and rev???.dat)
@@ -275,7 +283,13 @@ bool GetTransaction(const uint256& hash, CTransactionRef& tx, const Consensus::P
  * validationinterface callback.
  */
 bool ActivateBestChain(CValidationState& state, const CChainParams& chainparams, std::shared_ptr<const CBlock> pblock = std::shared_ptr<const CBlock>());
+// [PINK] Old function replaced by two underneath
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L992
+CAmount GetPoWBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1013
+CAmount GetPoSBlockSubsidy(int nHeight, const Consensus::Params& consensusParams, uint32_t nTime);
 
 /** Guess verification progress (as a fraction between 0.0=genesis and 1.0=current tip). */
 double GuessVerificationProgress(const ChainTxData& data, const CBlockIndex* pindex);

@@ -260,6 +260,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
             CDiskBlockIndex diskindex;
             if (pcursor->GetValue(diskindex)) {
                 // Construct block index object
+                // [PINK] TODO: Change based on https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L354
                 CBlockIndex* pindexNew = insertBlockIndex(diskindex.GetBlockHash());
                 pindexNew->pprev          = insertBlockIndex(diskindex.hashPrev);
                 pindexNew->nHeight        = diskindex.nHeight;
@@ -272,8 +273,14 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
                 pindexNew->nStatus        = diskindex.nStatus;
+                // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L363
+                pindexNew->nStakeModifier = diskindex.nStakeModifier;
                 pindexNew->nTx            = diskindex.nTx;
 
+                // [PINK] TODO: Change it to chain trust check
+                // [PINK] In Litecoin uses the sha256 hash for the block index for performance reasons
+                // [PINK] so does not check PoW here.
+                // [PINK] Pinkcoin uses scrypt. Maybe we should reconsider changing it?
                 if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams))
                     return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
 
@@ -304,9 +311,16 @@ public:
     //! at which height this transaction was included in the active block chain
     int nHeight;
 
-    //! empty constructor
-    CCoins() : fCoinBase(false), vout(0), nHeight(0) { }
+    // [PINK] Whether transaction is a coinstake
+    bool fCoinStake;
 
+    // [PINK] Transaction timestamp
+    uint32_t nTime;
+
+    //! empty constructor
+    CCoins() : fCoinBase(false), vout(0), nHeight(0), fCoinStake(false), nTime(0) { }
+
+    // [PINK] Changes from Peercoin: https://github.com/peercoin/peercoin/blob/master/src/main.h#L1126
     template<typename Stream>
     void Unserialize(Stream &s) {
         unsigned int nCode = 0;
@@ -339,6 +353,13 @@ public:
         }
         // coinbase height
         ::Unserialize(s, VARINT(nHeight, VarIntMode::NONNEGATIVE_SIGNED));
+
+        // [PINK] Flags
+        unsigned int nFlag = 0;
+        ::Unserialize(s, VARINT(nFlag));
+        fCoinStake = nFlag & 1;
+        // [PINK] Transaction timestamp
+        ::Unserialize(s, VARINT(nTime));
     }
 };
 
@@ -387,7 +408,7 @@ bool CCoinsViewDB::Upgrade() {
             COutPoint outpoint(key.second, 0);
             for (size_t i = 0; i < old_coins.vout.size(); ++i) {
                 if (!old_coins.vout[i].IsNull() && !old_coins.vout[i].scriptPubKey.IsUnspendable()) {
-                    Coin newcoin(std::move(old_coins.vout[i]), old_coins.nHeight, old_coins.fCoinBase);
+                    Coin newcoin(std::move(old_coins.vout[i]), old_coins.nHeight, old_coins.fCoinBase, old_coins.fCoinStake, old_coins.nTime);
                     outpoint.n = i;
                     CoinEntry entry(&outpoint);
                     batch.Write(entry, newcoin);

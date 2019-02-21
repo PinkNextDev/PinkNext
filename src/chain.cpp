@@ -4,6 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chain.h>
+#include <validation.h>
+#include <logging.h>
 
 /**
  * CChain implementation
@@ -118,6 +120,83 @@ void CBlockIndex::BuildSkip()
         pskip = pprev->GetAncestor(GetSkipHeight(nHeight));
 }
 
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2334
+void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase, const uint32_t nBlockTime, bool isPos, bool isNew)
+{
+    CBlockIndex *pindexBest = chainActive.Tip();
+
+    // If this block is more than 10 minutes older than our current best block and is building on a block deeper
+    // in our chain than our previous best block then we're going to treat it like it's difficulty was 10x easier.
+    if (isNew && pindexBest && pindexBase->nHeight < pindexBest->pprev->nHeight && nBlockTime < pindexBest->nTime - 600)
+        bnTarget = bnTarget * 10;
+
+    if (isPos)
+    {
+        /* nBaseStakeTrust uses the most difficult block in the last 1024 block window (which ends at least 1024 blocks in the past)
+        *  as a base chaintrust value for POS blocks. This keeps POS block trust within a reasonable range of POW block trust,
+        *  allowing POS blocks to provide significantly more protection against a POW based 51% attack while still allowing POW blocks
+        *  to provide protection against a POS based 51% attack.
+        */
+        // Generate new nBaseStakeTrust if we don't have one or it has been 1024 blocks since the last one.
+        if (nBaseStakeTrust == 0 || pindexBase->nHeight > nBaseStakeTrustHeight + 1024)
+        {
+            int nBaseMask = 1023;
+            while ((pindexBase->nHeight & nBaseMask) != 0)
+                pindexBase = pindexBase->pprev;
+
+            nBaseStakeTrustHeight = pindexBase->nHeight;
+
+            for (int i = 0; i < 1024; ++i)
+                pindexBase = pindexBase->pprev;
+
+            uint32_t nBestBits = 0;
+            for (int i = 0; i < 1024; ++i)
+            {
+                if (pindexBase->nBits < nBestBits || nBestBits == 0)
+                    nBestBits = pindexBase->nBits;
+                pindexBase = pindexBase->pprev;
+            }
+
+            nBaseStakeTrust.SetCompact(nBestBits);
+            bnStakeTrust = nBaseStakeTrust;
+            LogPrintf("StakeTrust nBestBits=%s\n", bnStakeTrust.ToString());
+        } else {
+            bnStakeTrust = nBaseStakeTrust;
+        }
+    }
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2380
+arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew)
+{
+    arith_uint256 bnTarget;
+    bool fNegative;
+    bool fOverflow;
+    bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
+    if (fNegative || fOverflow || bnTarget == 0)
+        return 0;
+
+    if (block.nTime > Params().GetConsensus().V221Time)
+    {
+        CBlockIndex *pindexBase = block.pprev;
+
+        arith_uint256 bnStakeTrust = 0u;
+        arith_uint256 bnTargetTest = bnTarget;
+        arith_uint256 bnTargetBase = arith_uint256(1) << 256;
+
+        GetModTrust(bnStakeTrust, bnTargetTest, pindexBase, block.nTime, block.IsProofOfStake(), isNew);
+
+        arith_uint256 nTrustRet = bnTargetBase / (bnTargetTest + 1);
+        if (bnStakeTrust != 0u)
+            nTrustRet += bnTargetBase / bnStakeTrust;
+
+        return nTrustRet;
+    }
+
+    return (arith_uint256(1) << 256) / (bnTarget + 1);
+}
+
+// [PINK] GetBlockTrust replaces GetBlockProof
 arith_uint256 GetBlockProof(const CBlockIndex& block)
 {
     arith_uint256 bnTarget;
@@ -167,4 +246,27 @@ const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* 
     // Eventually all chain branches meet at the genesis block.
     assert(pa == pb);
     return pa;
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1085
+// [PINK] TODO: Rewrite it as a static member of CBlockIndex class??
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake)
+{
+    while (pindex && pindex->pprev && (pindex->IsProofOfStake() != fProofOfStake))
+        pindex = pindex->pprev;
+    return pindex;
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1092
+// [PINK] TODO: Rewrite it as a static member of CBlockIndex class??
+const CBlockIndex* GetLastBlockIndex2(const CBlockIndex* pindex, bool fFlashStake)
+{
+    bool bFlashStake = true;
+    while (pindex && pindex->pprev && Params().GetConsensus().IsFlashStake(pindex->nTime) != fFlashStake)
+    {
+        pindex = pindex->pprev;
+    }
+    while (pindex && pindex->pprev && (!pindex->IsProofOfStake()))
+        pindex = pindex->pprev;
+    return pindex;
 }

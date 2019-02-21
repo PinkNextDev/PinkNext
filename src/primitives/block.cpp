@@ -7,13 +7,35 @@
 
 #include <hash.h>
 #include <tinyformat.h>
-#include <util/strencodings.h>
+#include <arith_uint256.h>
 #include <crypto/common.h>
+#include <crypto/scrypt.h>
 
 uint256 CBlockHeader::GetHash() const
 {
-    return SerializeHash(*this);
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L909
+    return GetPoWHash();
 }
+
+uint256 CBlockHeader::GetPoWHash() const
+{
+    uint256 thash;
+    scrypt_1024_1_1_256(begin(), (char*)thash.begin());
+    return thash;
+}
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L926
+// Entropy bit for stake modifier if chosen by modifier
+uint64_t CBlockHeader::GetStakeEntropyBit() const
+{
+    // Take last bit of block hash as entropy bit
+    uint64_t nEntropyBit = ((UintToArith256(GetHash()).GetLow64()) & (uint64_t)1);
+    // [PINK] TODO: Find out how to log debug stuff conditionally ;)
+    // if (fDebug && GetBoolArg("-printstakemodifier"))
+    //     printf("GetStakeEntropyBit: hashBlock=%s nEntropyBit=%u\n", GetHash().ToString().c_str(), nEntropyBit);
+    return nEntropyBit;
+}
+
 
 std::string CBlock::ToString() const
 {

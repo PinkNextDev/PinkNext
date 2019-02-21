@@ -6,6 +6,7 @@
 #ifndef BITCOIN_CHAIN_H
 #define BITCOIN_CHAIN_H
 
+#include <chainparams.h>
 #include <arith_uint256.h>
 #include <consensus/params.h>
 #include <primitives/block.h>
@@ -18,7 +19,9 @@
  * Maximum amount of time that a block timestamp is allowed to exceed the
  * current network-adjusted time before the block will be accepted.
  */
-static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 2 * 60 * 60;
+// [PINK] The same as FutureDrift in consensus.params. Remove it??
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L47
+static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 10 * 60;
 
 /**
  * Timestamp window used as a grace period by code that compares external
@@ -167,7 +170,12 @@ enum BlockStatus: uint32_t {
     BLOCK_FAILED_CHILD       =   64, //!< descends from failed block
     BLOCK_FAILED_MASK        =   BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
 
-    BLOCK_OPT_WITNESS       =   128, //!< block data in blk*.data was received with a witness-enforcing client
+    BLOCK_OPT_WITNESS        =  128, //!< block data in blk*.data was received with a witness-enforcing client
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1131
+    BLOCK_PROOF_OF_STAKE     =  256,  //! is proof-of-stake block
+    BLOCK_STAKE_ENTROPY      =  512,  //! entropy bit for stake modifier
+    BLOCK_STAKE_MODIFIER     = 1024,  //! regenerated stake modifier
 };
 
 /** The block chain is a tree shaped structure starting with the
@@ -199,6 +207,11 @@ public:
     //! Byte offset within rev?????.dat where this block's undo data is stored
     unsigned int nUndoPos;
 
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1122
+    // [PINK] Trust score of block chain
+    arith_uint256 nChainTrust;
+
+    // [PINK] TODO: Remove it.
     //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
     arith_uint256 nChainWork;
 
@@ -213,6 +226,11 @@ public:
 
     //! Verification status of this block. See enum BlockStatus
     uint32_t nStatus;
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1136
+    // [PINK] hash modifier of proof-of-stake
+    // [PINK] TODO: Change from uint64_t to uint256
+    uint64_t nStakeModifier;
 
     //! block header
     int32_t nVersion;
@@ -236,10 +254,15 @@ public:
         nFile = 0;
         nDataPos = 0;
         nUndoPos = 0;
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1159
+        nChainTrust = arith_uint256();
+        // [PINK] TODO: remove it.
         nChainWork = arith_uint256();
         nTx = 0;
         nChainTx = 0;
         nStatus = 0;
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1163
+        nStakeModifier = 0;
         nSequenceId = 0;
         nTimeMax = 0;
 
@@ -300,6 +323,55 @@ public:
     uint256 GetBlockHash() const
     {
         return *phashBlock;
+    }
+
+    // [PINK] From Litecoin. Do we need it at all??
+    uint256 GetBlockPoWHash() const
+    {
+        return GetBlockHeader().GetPoWHash();
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1272
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1277
+    bool IsProofOfStake() const
+    {
+        return (nStatus & BLOCK_PROOF_OF_STAKE);
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1290
+    void SetProofOfStake()
+    {
+        nStatus |= BLOCK_PROOF_OF_STAKE;
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1300
+    unsigned int GetStakeEntropyBit() const
+    {
+        return ((nStatus & BLOCK_STAKE_ENTROPY) >> 1);
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1308
+    bool GeneratedStakeModifier() const
+    {
+        return (nStatus & BLOCK_STAKE_MODIFIER);
+    }
+
+    void SetStakeModifier(uint64_t nModifier, bool fGeneratedStakeModifier)
+    {
+        nStakeModifier = nModifier;
+        if (fGeneratedStakeModifier)
+            nStatus |= BLOCK_STAKE_MODIFIER;
+    }
+
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1243
+    int64_t GetPastTimeLimit() const
+    {
+        return GetMedianTimePast();
     }
 
     /**
@@ -382,6 +454,10 @@ int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& fr
 /** Find the forking point between two chain tips. */
 const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* pb);
 
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1231
+arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew = false);
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L127
+void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase, const uint32_t nBlockTime, bool isPos, bool isNew);
 
 /** Used to marshal pointers into hashes for db storage. */
 class CDiskBlockIndex : public CBlockIndex
@@ -407,6 +483,9 @@ public:
 
         READWRITE(VARINT(nHeight, VarIntMode::NONNEGATIVE_SIGNED));
         READWRITE(VARINT(nStatus));
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1376
+        // [PINK] TODO: Check if it's ok!
+        READWRITE(VARINT(nStakeModifier));
         READWRITE(VARINT(nTx));
         if (nStatus & (BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO))
             READWRITE(VARINT(nFile, VarIntMode::NONNEGATIVE_SIGNED));
@@ -507,5 +586,12 @@ public:
     /** Find the earliest block with timestamp equal or greater than the given. */
     CBlockIndex* FindEarliestAtLeast(int64_t nTime) const;
 };
+
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L123
+// [PINK] TODO: Rewrite it as a static member of CBlockIndex or CChain class??
+const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L124
+// [PINK] TODO: Rewrite it as a static member of CBlockIndex or CChain class??
+const CBlockIndex* GetLastBlockIndex2(const CBlockIndex* pindex, bool fFlashStake);
 
 #endif // BITCOIN_CHAIN_H

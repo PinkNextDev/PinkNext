@@ -14,7 +14,8 @@
 extern CCriticalSection cs_main;
 
 /** Default for -maxorphantx, maximum number of orphan transactions kept in memory */
-static const unsigned int DEFAULT_MAX_ORPHAN_TRANSACTIONS = 100;
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L30
+static const unsigned int DEFAULT_MAX_ORPHAN_TRANSACTIONS = 10000;
 /** Default number of orphan+recently-replaced txn to keep around for block reconstruction */
 static const unsigned int DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN = 100;
 /** Default for BIP61 (sending reject messages) */
