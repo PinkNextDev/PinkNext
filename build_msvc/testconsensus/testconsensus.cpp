@@ -27,7 +27,7 @@ CMutableTransaction BuildSpendingTransaction(const CScript& scriptSig, const CSc
 
 int main()
 {
-    std::cout << "bitcoinconsensus version: " << bitcoinconsensus_version() << std::endl;
+    std::cout << "pinkcoinconsensus version: " << bitcoinconsensus_version() << std::endl;
 
     CScript pubKeyScript;
     pubKeyScript << OP_1 << OP_0 << OP_1;

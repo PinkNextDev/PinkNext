@@ -1,7 +1,7 @@
-Contributing to Bitcoin Core
+Contributing to Pinkcoin Next
 ============================
 
-The Bitcoin Core project operates an open contributor model where anyone is
+The Pinkcoin Next project operates an open contributor model where anyone is
 welcome to contribute towards development in the form of peer review, testing
 and patches. This document explains the practical process and guidelines for
 contributing.
@@ -21,7 +21,7 @@ list.
 Communication Channels
 ----------------------
 
-Most communication about Bitcoin Core development happens on IRC, in the
+Most communication about Pinkcoin Next development happens on IRC, in the
 #bitcoin-core-dev channel on Freenode. The easiest way to participate on IRC is
 with the web client, [webchat.freenode.net](https://webchat.freenode.net/). Chat
 history logs can be found
@@ -81,7 +81,7 @@ the pull request affects. Valid areas as:
 
   - *Consensus* for changes to consensus critical code
   - *Docs* for changes to the documentation
-  - *Qt* for changes to bitcoin-qt
+  - *Qt* for changes to pinkcoin-qt
   - *Mining* for changes to the mining code
   - *Net* or *P2P* for changes to the peer-to-peer network code
   - *RPC/REST/ZMQ* for changes to the RPC, REST or ZMQ APIs

@@ -1,11 +1,14 @@
+.vscode/
+.vscode/*.json
+debug-build
 *.tar.gz
 
 *.exe
-src/bitcoin
-src/bitcoind
-src/bitcoin-cli
-src/bitcoin-tx
-src/bitcoin-wallet
+src/pinkcoin
+src/pinkcoind
+src/pinkcoin-cli
+src/pinkcoin-tx
+src/pinkcoin-wallet
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
 src/qt/test/test_bitcoin-qt
@@ -81,8 +84,8 @@ src/qt/bitcoin-qt.includes
 # Compilation and Qt preprocessor part
 *.qm
 Makefile
-bitcoin-qt
-Bitcoin-Qt.app
+pinkcoin-qt
+Pinkcoin-Qt.app
 background.tiff*
 
 # Unit-tests

@@ -280,6 +280,7 @@ if __name__ == '__main__':
         settings['rev_hash_bytes'] = 'false'
     settings['rev_hash_bytes'] = settings['rev_hash_bytes'].lower()
 
+    # [PINK] TODO: Update
     if 'netmagic' not in settings:
         settings['netmagic'] = 'f9beb4d9'
     if 'genesis' not in settings:

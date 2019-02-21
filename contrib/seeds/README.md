@@ -8,7 +8,7 @@ and remove old versions as necessary (at a minimum when GetDesirableServiceFlags
 changes its default return value, as those are the services which seeds are added
 to addrman with).
 
-The seeds compiled into the release are created from sipa's DNS seed data, like this:
+The seeds compiled into the release are created from sipa's DNS seed data, like this (TODO: Create one for Pinkcoin):
 
     curl -s http://bitcoin.sipa.be/seeds.txt.gz | gzip -dc > seeds_main.txt
     python3 makeseeds.py < seeds_main.txt > nodes_main.txt
