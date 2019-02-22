@@ -261,12 +261,21 @@ const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfSta
 // [PINK] TODO: Rewrite it as a static member of CBlockIndex class??
 const CBlockIndex* GetLastBlockIndex2(const CBlockIndex* pindex, bool fFlashStake)
 {
-    bool bFlashStake = true;
-    while (pindex && pindex->pprev && Params().GetConsensus().IsFlashStake(pindex->nTime) != fFlashStake)
-    {
-        pindex = pindex->pprev;
+    const Consensus::Params &chainparams = Params().GetConsensus();
+
+    if (pindex->nHeight >= chainparams.V222Height) {
+
+        while (pindex && pindex->pprev && !pindex->IsFPOS(fFlashStake))
+            pindex = pindex->pprev;
+
+    } else {
+
+        while (pindex && pindex->pprev && chainparams.IsFlashStake(pindex->nTime) != fFlashStake)
+        {
+            pindex = pindex->pprev;
+        }
+        while (pindex && pindex->pprev && (!pindex->IsProofOfStake()))
+            pindex = pindex->pprev;
     }
-    while (pindex && pindex->pprev && (!pindex->IsProofOfStake()))
-        pindex = pindex->pprev;
     return pindex;
 }

@@ -88,6 +88,8 @@ public:
         // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
         // [PINK] Oct 29 2018 0:00:00 (block 646272)
         consensus.V221Time = 1540771200;
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1098
+        consensus.V222Height = 771000;
 
         // // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L54
         consensus.nHour1 = 15;  // 7am UTC-8
@@ -221,7 +223,8 @@ public:
                 {610000, uint256S("0x0000000000090088e2b22d5ef14f2e63fb64b0ca6656a7b7d4b3e37da25f5d59")},
                 {620000, uint256S("0x000000000000c4ba0b8b56e707858ec912014f7538f0fe3dd67f4ceac169fbc7")},
                 {630000, uint256S("0x000000000023154bdf6cb7546ba146d9b973591cdd2e12638b711af66c004a1c")},
-                {640000, uint256S("0x0000000000256123ab4a8ac67758f0a779dd31fb853f54bfc97ca6b97c653320")}
+                {640000, uint256S("0x0000000000256123ab4a8ac67758f0a779dd31fb853f54bfc97ca6b97c653320")},
+                {728000, uint256S("0x00000000002984a1ea9ce4967fca19765a55724234e8479a7f7644c22ee5b30c")}
             }
         };
 

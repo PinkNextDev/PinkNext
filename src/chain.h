@@ -343,6 +343,16 @@ public:
         return (nStatus & BLOCK_PROOF_OF_STAKE);
     }
 
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1282
+    bool IsFPOS(bool nFlash) const
+    {
+        if (IsProofOfStake()) {
+            return nFlash == Params().GetConsensus().IsFlashStake(nTime);
+        }
+
+        return false;
+    }
+
     // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1290
     void SetProofOfStake()
     {

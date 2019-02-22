@@ -69,6 +69,8 @@ struct Params {
     uint32_t V220Time;
     // [PINK] 51% attack prev change: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
     uint32_t V221Time;
+    // [PINK] PoS <-> FPoS flip period fix: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1098
+    uint32_t V222Height;
 
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
