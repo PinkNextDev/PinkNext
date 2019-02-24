@@ -211,7 +211,7 @@ public:
     // [PINK] Trust score of block chain
     arith_uint256 nChainTrust;
 
-    // [PINK] TODO: Remove it.
+    // [PINK] TODO: Use it to store only chain work from PoW blocks.
     //! (memory only) Total amount of work (expected number of hashes) in the chain up to and including this block
     arith_uint256 nChainWork;
 
@@ -458,6 +458,7 @@ public:
     const CBlockIndex* GetAncestor(int height) const;
 };
 
+// [PINK] TODO: Remove it?
 arith_uint256 GetBlockProof(const CBlockIndex& block);
 /** Return the time it would take to redo the work difference between from and to, assuming the current hashrate corresponds to the difficulty at tip, in seconds. */
 int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params&);

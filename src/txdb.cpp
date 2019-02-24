@@ -260,7 +260,6 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
             CDiskBlockIndex diskindex;
             if (pcursor->GetValue(diskindex)) {
                 // Construct block index object
-                // [PINK] TODO: Change based on https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L354
                 CBlockIndex* pindexNew = insertBlockIndex(diskindex.GetBlockHash());
                 pindexNew->pprev          = insertBlockIndex(diskindex.hashPrev);
                 pindexNew->nHeight        = diskindex.nHeight;
@@ -273,16 +272,23 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nBits          = diskindex.nBits;
                 pindexNew->nNonce         = diskindex.nNonce;
                 pindexNew->nStatus        = diskindex.nStatus;
+                pindexNew->nTx            = diskindex.nTx;
                 // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L363
                 pindexNew->nStakeModifier = diskindex.nStakeModifier;
-                pindexNew->nTx            = diskindex.nTx;
 
-                // [PINK] TODO: Change it to chain trust check
-                // [PINK] In Litecoin uses the sha256 hash for the block index for performance reasons
-                // [PINK] so does not check PoW here.
-                // [PINK] Pinkcoin uses scrypt. Maybe we should reconsider changing it?
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams))
-                    return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
+                // [PINK] Litecoin uses the sha256 hash for the block index for performance reasons
+                // [PINK] so it does not check PoW here (old Pinkcoin code neither I think).
+                // [PINK] TODO: Remove that check?
+                if (pindexNew->IsProofOfWork()) {
+                    if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, consensusParams))
+                        return error("%s: CheckProofOfWork failed: %s", __func__, pindexNew->ToString());
+                } else {
+                    // [PINK] TODO: Add kernel check for PoS??
+
+                }
+
+                // [PINK] TODO: Add some way of handling setStakeSeen
+                // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L384
 
                 pcursor->Next();
             } else {

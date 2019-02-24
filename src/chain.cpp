@@ -121,14 +121,16 @@ void CBlockIndex::BuildSkip()
 }
 
 // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2334
-void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase, const uint32_t nBlockTime, bool isPos, bool isNew)
+void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase,
+                 const uint32_t nBlockTime, bool isPos, bool isNew)
 {
     CBlockIndex *pindexBest = chainActive.Tip();
 
     // If this block is more than 10 minutes older than our current best block and is building on a block deeper
     // in our chain than our previous best block then we're going to treat it like it's difficulty was 10x easier.
-    if (isNew && pindexBest && pindexBase->nHeight < pindexBest->pprev->nHeight && nBlockTime < pindexBest->nTime - 600)
+    if (isNew && pindexBest && pindexBase->nHeight < pindexBest->pprev->nHeight && nBlockTime < pindexBest->nTime - 600) {
         bnTarget = bnTarget * 10;
+    }
 
     if (isPos)
     {
@@ -141,25 +143,29 @@ void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockInd
         if (nBaseStakeTrust == 0 || pindexBase->nHeight > nBaseStakeTrustHeight + 1024)
         {
             int nBaseMask = 1023;
-            while ((pindexBase->nHeight & nBaseMask) != 0)
+            while ((pindexBase->nHeight & nBaseMask) != 0) {
                 pindexBase = pindexBase->pprev;
+            }
 
             nBaseStakeTrustHeight = pindexBase->nHeight;
 
-            for (int i = 0; i < 1024; ++i)
+            for (int i = 0; i < 1024; ++i) {
                 pindexBase = pindexBase->pprev;
+            }
 
             uint32_t nBestBits = 0;
             for (int i = 0; i < 1024; ++i)
             {
-                if (pindexBase->nBits < nBestBits || nBestBits == 0)
+                if (pindexBase->nBits < nBestBits || nBestBits == 0) {
                     nBestBits = pindexBase->nBits;
+                }
                 pindexBase = pindexBase->pprev;
             }
 
             nBaseStakeTrust.SetCompact(nBestBits);
             bnStakeTrust = nBaseStakeTrust;
             LogPrintf("StakeTrust nBestBits=%s\n", bnStakeTrust.ToString());
+
         } else {
             bnStakeTrust = nBaseStakeTrust;
         }
@@ -173,8 +179,9 @@ arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew)
     bool fNegative;
     bool fOverflow;
     bnTarget.SetCompact(block.nBits, &fNegative, &fOverflow);
-    if (fNegative || fOverflow || bnTarget == 0)
+    if (fNegative || fOverflow || bnTarget == 0) {
         return 0;
+    }
 
     if (block.nTime > Params().GetConsensus().V221Time)
     {
@@ -182,21 +189,30 @@ arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew)
 
         arith_uint256 bnStakeTrust = 0u;
         arith_uint256 bnTargetTest = bnTarget;
-        arith_uint256 bnTargetBase = arith_uint256(1) << 256;
 
         GetModTrust(bnStakeTrust, bnTargetTest, pindexBase, block.nTime, block.IsProofOfStake(), isNew);
 
-        arith_uint256 nTrustRet = bnTargetBase / (bnTargetTest + 1);
-        if (bnStakeTrust != 0u)
-            nTrustRet += bnTargetBase / bnStakeTrust;
+        // [PINK] 2**256 / (bnTargetTest+1) = ~bnTargetTest / (bnTargetTest+1) + 1
+        arith_uint256 nTrustRet = (~bnTargetTest / (bnTargetTest + 1)) + 1;
+        if (bnStakeTrust != 0u) {
+            // [PINK] 2**256 / bnStakeTrust = ((2**256 - bnStakeTrust) / bnStakeTrust) + 1 =
+            // [PINK] ((2**256 - 1 - (bnStakeTrust - 1)) / bnStakeTrust) + 1 =
+            // [PINK] ~(bnStakeTrust - 1) / bnStakeTrust + 1
+            nTrustRet += ((~(bnStakeTrust - 1) / bnStakeTrust) + 1);
+        }
 
         return nTrustRet;
     }
 
-    return (arith_uint256(1) << 256) / (bnTarget + 1);
+    // We need to compute 2**256 / (bnTarget+1), but we can't represent 2**256
+    // as it's too large for an arith_uint256. However, as 2**256 is at least as large
+    // as bnTarget+1, it is equal to ((2**256 - bnTarget - 1) / (bnTarget+1)) + 1,
+    // or ~bnTarget / (bnTarget+1) + 1.
+    return (~bnTarget / (bnTarget + 1)) + 1;
 }
 
 // [PINK] GetBlockTrust replaces GetBlockProof
+// [PINK] TODO: Remove it?
 arith_uint256 GetBlockProof(const CBlockIndex& block)
 {
     arith_uint256 bnTarget;
@@ -212,6 +228,7 @@ arith_uint256 GetBlockProof(const CBlockIndex& block)
     return (~bnTarget / (bnTarget + 1)) + 1;
 }
 
+// [PINK] TODO: Modify somehow using chain trust? Or split PoS and PoW chain trust components?
 int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& from, const CBlockIndex& tip, const Consensus::Params& params)
 {
     arith_uint256 r;
@@ -222,7 +239,9 @@ int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& fr
         r = from.nChainWork - to.nChainWork;
         sign = -1;
     }
-    r = r * arith_uint256(params.nPowTargetSpacing) / GetBlockProof(tip);
+    // [PINK] TODO: Find last PoW block (starting from the tip)
+    // [PINK] Use it in eq. below.
+    r = r * arith_uint256(params.nPowTargetSpacing) / GetBlockTrust(tip);
     if (r.bits() > 63) {
         return sign * std::numeric_limits<int64_t>::max();
     }
