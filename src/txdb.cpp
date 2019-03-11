@@ -273,7 +273,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 pindexNew->nNonce         = diskindex.nNonce;
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
-                // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L363
+                // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/txdb-leveldb.cpp#L363
                 pindexNew->nStakeModifier = diskindex.nStakeModifier;
 
                 // [PINK] Litecoin uses the sha256 hash for the block index for performance reasons
@@ -288,7 +288,7 @@ bool CBlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, 
                 }
 
                 // [PINK] TODO: Add some way of handling setStakeSeen
-                // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/txdb-leveldb.cpp#L384
+                // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/txdb-leveldb.cpp#L384
 
                 pcursor->Next();
             } else {

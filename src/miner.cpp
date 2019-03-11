@@ -31,7 +31,7 @@
 #include <queue>
 #include <utility>
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1320
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1402
 int64_t UpdateTime(CBlockHeader* pblock, const Consensus::Params& consensusParams, const CBlockIndex* pindexPrev)
 {
     int64_t nOldTime = pblock->nTime;

@@ -181,9 +181,9 @@ extern arith_uint256 nMinimumChainWork;
 /** Best header we've seen so far (used for getheaders queries' starting points). */
 extern CBlockIndex *pindexBestHeader;
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L44
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L44
 extern arith_uint256 nBaseStakeTrust;
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L45
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L45
 extern int nBaseStakeTrustHeight;
 
 /** Minimum disk space required - used in CheckDiskSpace() */
@@ -286,9 +286,9 @@ bool ActivateBestChain(CValidationState& state, const CChainParams& chainparams,
 // [PINK] Old function replaced by two underneath
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L992
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L995
 CAmount GetPoWBlockSubsidy(int nHeight, const Consensus::Params& consensusParams);
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1013
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1016
 CAmount GetPoSBlockSubsidy(int nHeight, const Consensus::Params& consensusParams, uint32_t nTime);
 
 /** Guess verification progress (as a fraction between 0.0=genesis and 1.0=current tip). */

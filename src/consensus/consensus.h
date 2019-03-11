@@ -9,20 +9,20 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L27
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L27
 /** The maximum allowed size for a serialized block, in bytes (only for buffer size limits) */
-static const unsigned int MAX_BLOCK_SERIALIZED_SIZE = 4000000;
+static const unsigned int MAX_BLOCK_SERIALIZED_SIZE = 4000000; // 1000000 ??
 /** The maximum allowed weight for a block, see BIP 141 (network rule) */
 static const unsigned int MAX_BLOCK_WEIGHT = 4000000;
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L29
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L29
 /** The maximum allowed number of signature check operations in a block (network rule) */
-static const int64_t MAX_BLOCK_SIGOPS_COST = 80000;
+static const int64_t MAX_BLOCK_SIGOPS_COST = 80000; // 20000 ??
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L59
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L59
 static const int COINBASE_MATURITY = 20;
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2727
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2809
 // [PINK] TODO: Use it!
 static const int COINBASE_MATURITY_TESTNET = 10;
 

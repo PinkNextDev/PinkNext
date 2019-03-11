@@ -227,9 +227,9 @@ RecursiveMutex cs_main;
 BlockMap& mapBlockIndex = g_chainstate.mapBlockIndex;
 CChain& chainActive = g_chainstate.chainActive;
 CBlockIndex *pindexBestHeader = nullptr;
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L44
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L44
 arith_uint256 nBaseStakeTrust = 0;
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L45
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L45
 int nBaseStakeTrustHeight = 0;
 Mutex g_best_block_mutex;
 std::condition_variable g_best_block_cv;
@@ -1169,7 +1169,7 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     return nSubsidy;
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L992
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L995
 CAmount GetPoWBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
     CAmount nSubsidy = 0 * COIN;
@@ -1195,7 +1195,7 @@ CAmount GetPoWBlockSubsidy(int nHeight, const Consensus::Params& consensusParams
     return nSubsidy;
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1013
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1016
 CAmount GetPoSBlockSubsidy(int nHeight, const Consensus::Params& consensusParams, uint32_t nTime)
 {
     CAmount nSubsidy = 0 * COIN;
@@ -1941,7 +1941,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     // two in the chain that violate it. This prevents exploiting the issue against nodes during their
     // initial block download.
     //----------------------------------------------------------------------------------------------
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1632
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1714
     bool fEnforceBIP30 = true;
     // bool fEnforceBIP30 = !((pindex->nHeight==91842 && pindex->GetBlockHash() == uint256S("0x00000000000a4d0a398161ffc163c503763b1f4360639393e0e4c8e300e0caec")) ||
     //                        (pindex->nHeight==91880 && pindex->GetBlockHash() == uint256S("0x00000000000743f190a18c5577a3c2d2a1f610ae9601ac046a38084ccb7cd721")));
@@ -3008,8 +3008,8 @@ CBlockIndex* CChainState::AddToBlockIndex(const CBlockHeader& block)
     }
     pindexNew->nTimeMax = (pindexNew->pprev ? std::max(pindexNew->pprev->nTimeMax, pindexNew->nTime) : pindexNew->nTime);
     // [PINK] TODO: Change GetBlockProof to work like GetBlockTrust
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2081
-    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockTrust(*pindexNew);
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2163
+    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockTrust(*pindexNew, true);
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == nullptr || pindexBestHeader->nChainWork < pindexNew->nChainWork)
         pindexBestHeader = pindexNew;

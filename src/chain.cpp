@@ -120,7 +120,7 @@ void CBlockIndex::BuildSkip()
         pskip = pprev->GetAncestor(GetSkipHeight(nHeight));
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2334
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2416
 void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase,
                  const uint32_t nBlockTime, bool isPos, bool isNew)
 {
@@ -172,7 +172,7 @@ void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockInd
     }
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2380
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2462
 arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew)
 {
     arith_uint256 bnTarget;
@@ -267,7 +267,7 @@ const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* 
     return pa;
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1085
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1088
 // [PINK] TODO: Rewrite it as a static member of CBlockIndex class??
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake)
 {
@@ -276,7 +276,7 @@ const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfSta
     return pindex;
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1092
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1095
 // [PINK] TODO: Rewrite it as a static member of CBlockIndex class??
 const CBlockIndex* GetLastBlockIndex2(const CBlockIndex* pindex, bool fFlashStake)
 {

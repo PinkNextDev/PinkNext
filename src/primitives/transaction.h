@@ -162,7 +162,7 @@ public:
         return (nValue == -1);
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L367
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L369
     void SetEmpty()
     {
         nValue = 0;
@@ -302,7 +302,7 @@ public:
     const std::vector<CTxIn> vin;
     const std::vector<CTxOut> vout;
     const int32_t nVersion;
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L434
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L436
     const uint32_t nTime;
     const uint32_t nLockTime;
 
@@ -353,11 +353,11 @@ public:
 
     bool IsCoinBase() const
     {
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L527
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L529
         return (vin.size() == 1 && vin[0].prevout.IsNull() && vout.size() >= 1);
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L530
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L532
     bool IsCoinStake() const
     {
         // Pinkcoin: the coin stake transaction is marked with the first output empty.
@@ -393,7 +393,7 @@ struct CMutableTransaction
     std::vector<CTxIn> vin;
     std::vector<CTxOut> vout;
     int32_t nVersion;
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L434
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L436
     uint32_t nTime;
     uint32_t nLockTime;
 

@@ -22,7 +22,7 @@ static const CAmount COIN = 100000000;
  * critical; in unusual circumstances like a(nother) overflow bug that allowed
  * for the creation of coins out of thin air modification could lead to a fork.
  * */
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L36
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L36
 static const CAmount MAX_MONEY = 500000000 * COIN;
 inline bool MoneyRange(const CAmount& nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 

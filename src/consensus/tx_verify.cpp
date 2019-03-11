@@ -192,7 +192,7 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state, bool fChe
 
     if (tx.IsCoinBase())
     {
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L538
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L541
         if (tx.vin[0].scriptSig.size() < 2 || tx.vin[0].scriptSig.size() > 200)
             return state.DoS(100, false, REJECT_INVALID, "bad-cb-length");
     }

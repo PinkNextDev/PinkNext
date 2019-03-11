@@ -26,9 +26,9 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, uint32_t nTime, uint3
     txNew.nTime = nTime;
     txNew.vin.resize(1);
     txNew.vout.resize(1);
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2752
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2834
     txNew.vin[0].scriptSig = CScript() << 0 << CScriptNum(42) << std::vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2753
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2835
     txNew.vout[0].SetEmpty();
 
     CBlock genesis;
@@ -49,7 +49,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, uint32_t nTime, uint3
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion)
 {
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2747
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2829
     const char* pszTimestamp = "A black hole is a stable energy construct that occupies greater than three dimensions of physical space.";
     return CreateGenesisBlock(pszTimestamp, nTime, nNonce, nBits, nVersion);
 }
@@ -61,9 +61,9 @@ class CMainParams : public CChainParams {
 public:
     CMainParams() {
         strNetworkID = "main";
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#1002
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L33
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L37
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#1005
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L33
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L37
         // [PINK] nSubsidyHalvingInterval = nHalvingPoint*YEARLY_BLOCKCOUNT
         // [PINK] YEARLY_BLOCKCOUNT = 423400 - number of blocks in a year
         consensus.nSubsidyHalvingInterval = 846800;
@@ -78,43 +78,44 @@ public:
         // [PINK] Not activated yet so set to very high number.
         consensus.BIP66Height = 10000000;
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1176
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1189
         consensus.V2104Height = 315065;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2149
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2231
         consensus.V2104Time = 1513942698;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2241
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2323
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/kernel.cpp#L289
         // [PINK] Sep 30 2018 0:00:00 (block 615543)
         consensus.V220Time = 1538265600;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L94
         // [PINK] Oct 29 2018 0:00:00 (block 646272)
         consensus.V221Time = 1540771200;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1098
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1098
         consensus.V222Height = 771000;
 
-        // // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L54
+        // // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L54
         consensus.nHour1 = 15;  // 7am UTC-8
         consensus.nHour2 = 20;  // 12pm UTC-8
         consensus.nHour3 = 1;   // 5pm UTC-8
         consensus.nHour4 = 6;   // 10pm UTC-8
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L39 (40,41)
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L39 (40,41)
         consensus.powLimit  = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit  = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.fposLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1036
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1039
         consensus.nPowTargetTimespan = 60 * 60; // 60 minutes
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L47
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L47
         consensus.nPowTargetSpacing = 2 * 60;   //  2 minutes
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1037
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1040
         consensus.nPosTargetTimespan = 2 * 60 * 60; // 2 hours
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L48
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L48
         consensus.nPosTargetSpacing = 6 * 60;       // 6 minutes
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1038
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1041
         consensus.nFposTargetTimespan = 10 * 60; // 10 minutes
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L49
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L49
         consensus.nFposTargetSpacing = 1 * 60;   // 1 minute
 
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -152,29 +153,28 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 32-bit integer with any alignment.
          */
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L3054
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L3136
         pchMessageStart[0] = 0xf2;
         pchMessageStart[1] = 0xf4;
         pchMessageStart[2] = 0xf9;
         pchMessageStart[3] = 0xfb;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/protocol.h#L19
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/protocol.h#L19
         nDefaultPort = 9134;
         nPruneAfterHeight = 500000;
         // [PINK] TODO: Check it
         m_assumed_blockchain_size = 240;
         m_assumed_chain_state_size = 3;
 
-        // nTime, nNonce, nBits, nVersion, genesisReward
-        // [PINK] nTime: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2749
-        // [PINK] nNonce: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2762
-        // [PINK] nBits: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2761 and Litecoin
-        // [PINK] nVersion: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2759
+        // [PINK] nTime: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2831
+        // [PINK] nNonce: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2844
+        // [PINK] nBits: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2843
+        // [PINK] nVersion: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2841
         genesis = CreateGenesisBlock(1486329989, 6777712, 0x1e0fffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L43
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L43
         assert(consensus.hashGenesisBlock == uint256S("0x00000f79b700e6444665c4d090c9b8833664c4e2597c7087a6ba6391b956cc89"));
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2786
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2868
         assert(genesis.hashMerkleRoot == uint256S("0x96f872319c330aadbdc18543e27a305c6ab046801cfc81e20a004f3b26fad891"));
 
         // Note that of those which support the service bits prefix, most only support a subset of
@@ -189,12 +189,12 @@ public:
         vSeeds.emplace_back("sydney.pinkarmy.ml");
         vSeeds.emplace_back("tokyo.pinkarmy.ml");
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/base58.h#L276
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/base58.h#L276
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,3);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,28);
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/base58.h#L406
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/base58.h#L406
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128+3);
-        // [PINK] HD wallet - how to use it for Pinkcoin? https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+        // [PINK] TODO: HD wallet - how to use it for Pinkcoin? https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
@@ -208,7 +208,7 @@ public:
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/checkpoints.cpp#L28
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/checkpoints.cpp#L29
         checkpointData = {
             {
                 { 50000, uint256S("0x000000000f794eac0e68cbd44f803cf6efb5eb31ce88444f9dd5b9f183c71b47")},
@@ -258,25 +258,25 @@ public:
         consensus.BIP65Height = 10000000;
         consensus.BIP66Height = 10000000;
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L42
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L42
         consensus.powLimit  = uint256S("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.posLimit  = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.fposLimit = uint256S("003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1176
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1189
         consensus.V2104Height = 315065;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2149
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2231
         consensus.V2104Time = 1513942698;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2241
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2241
         // [PINK] Sep 30 2018 0:00:00 (block 615543)
         // [PINK] TODO: Fix it for testnet (there are two times for different stuff):
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/kernel.cpp#L289
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/kernel.cpp#L289
         consensus.V220Time = 1534208400;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L94
         // [PINK] Oct 29 2018 0:00:00 (block 646272)
         consensus.V221Time = 1540771200;
 
-        // // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L54
+        // // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L54
         consensus.nHour1 = 15;  // 7am UTC-8
         consensus.nHour2 = 20;  // 12pm UTC-8
         consensus.nHour3 = 1;   // 5pm UTC-8
@@ -326,27 +326,27 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x0000000000000037a8cd3e06cd5edbfe9dd1dbcc5dacab279376ef7cfc2b4c75"); //1354312
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/e569f7c9042b0dad13af46e9230d47835a7f1ec1/src/main.cpp#L2720
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2802
         pchMessageStart[0] = 0x02;
         pchMessageStart[1] = 0x04;
         pchMessageStart[2] = 0x05;
         pchMessageStart[3] = 0x0d;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/protocol.h#L19
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/protocol.h#L19
         nDefaultPort = 19134;
         nPruneAfterHeight = 1000;
         m_assumed_blockchain_size = 30;
         m_assumed_chain_state_size = 2;
 
-        // [PINK] nTime: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2749
-        // [PINK] nNonce: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2762
-        // [PINK] nBits: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2761
-        //               and https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2725
-        // [PINK] nVersion: https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2759
+        // [PINK] nTime: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2831
+        // [PINK] nNonce: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2844
+        // [PINK] nBits: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2843
+        //               and https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2807
+        // [PINK] nVersion: https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2841
         genesis = CreateGenesisBlock(1486329989, 23112, 0x1f00ffff, 1);
         consensus.hashGenesisBlock = genesis.GetHash();
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L44
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L44
         assert(consensus.hashGenesisBlock == uint256S("0x000076a007b949e5f8cdee6c18817d26bc224bfde575ce3f2ecb0dd000f7ec19"));
-        // [PINK] ?? https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2786
+        // [PINK] ?? https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2868
         assert(genesis.hashMerkleRoot == uint256S("0x96f872319c330aadbdc18543e27a305c6ab046801cfc81e20a004f3b26fad891"));
 
         vFixedSeeds.clear();
@@ -357,10 +357,10 @@ public:
         // vSeeds.emplace_back("seed.testnet.bitcoin.sprovoost.nl");
         // vSeeds.emplace_back("testnet-seed.bluematt.me");
 
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/base58.h#L278
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/base58.h#L278
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,55);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/base58.h#L406
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/base58.h#L406
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128+55);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
@@ -404,14 +404,14 @@ public:
         consensus.BIP34Hash = uint256();
         consensus.BIP65Height = 1351; // BIP65 activated on regtest (Used in functional tests)
         consensus.BIP66Height = 1251; // BIP66 activated on regtest (Used in functional tests)
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1176
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1189
         consensus.V2104Height = 315065;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2149
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2231
         consensus.V2104Time = 1513942698;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L2241
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L2241
         // [PINK] Sep 30 2018 0:00:00 (block 615543)
         consensus.V220Time = 1538265600;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L94
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L94
         // [PINK] Oct 29 2018 0:00:00 (block 646272)
         consensus.V221Time = 1540771200;
         consensus.nHour1 = 15;  // 7am UTC-8

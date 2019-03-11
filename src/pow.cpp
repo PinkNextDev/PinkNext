@@ -11,9 +11,19 @@
 #include <uint256.h>
 
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1104
-// [PINK] TODO: change it to support initial headers check
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1114
+// [PINK] TODO: change it to support initial headers check?
 uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake)
+{
+    if (pindexLast->nHeight < 817990) {
+        return GetNextTargetRequiredV1(pindexLast, pblock, params, fProofOfStake);
+    }
+    // Fork fixing nActualSpacing calculations for PoS/FPoS blocks
+    // (makes PoS and FPoS next target calculations completelly independent).
+    return GetNextTargetRequiredV2(pindexLast, pblock, params, fProofOfStake);
+}
+
+uint32_t GetNextTargetRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake)
 {
     assert(pindexLast != nullptr);
 
@@ -37,22 +47,23 @@ uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader
     bool fFlashFlip = false;
 
     int nTS;
-    nTS = params.nPowTargetSpacing;
 
     if (fProofOfStake)
     {
-        nTS = params.nPosTargetTimespan;
-
         if (params.IsFlashStake(pblock->nTime))
         {
+            fFlashStake = true;
+            nTS = params.nFposTargetTimespan;
             if (!params.IsFlashStake(pindexPrev->nTime))
                 fFlashFlip = true;
-            nTS = params.nFposTargetTimespan;
-            fFlashStake = true;
         } else {
+            nTS = params.nPosTargetTimespan;
             if (params.IsFlashStake(pindexPrev->nTime))
                 fFlashFlip = true;
         }
+    }
+    else {
+        nTS = params.nPowTargetSpacing;
     }
 
 
@@ -64,20 +75,15 @@ uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader
 
     if (fFlashFlip)
     {
-        if (fFlashStake)
-        {
-            const CBlockIndex* pPrev = GetLastBlockIndex2(pindexPrev, true);
-            if (pPrev == nullptr)
-                return bnTargetLimit.GetCompact();
-            nActualSpacing = pPrev->GetBlockTime() - GetLastBlockIndex(pPrev, true)->GetBlockTime();
-            bnNew.SetCompact(pPrev->nBits);
-        }
-        else {
-            const CBlockIndex* pPrev = GetLastBlockIndex2(pindexPrev, false);
-            nActualSpacing = pPrev->GetBlockTime() - GetLastBlockIndex(pPrev, true)->GetBlockTime();
-            bnNew.SetCompact(pPrev->nBits);
-        }
-    } else {
+        // Replaces old version of nActualSpacing calculation for flip
+        // blocks as it was discovered to always resolve to 0.
+        const CBlockIndex* pPrev = GetLastBlockIndex2(pindexPrev, fFlashStake);
+        if (pPrev == nullptr)
+            return bnTargetLimit.GetCompact();
+        nActualSpacing = 0;
+        bnNew.SetCompact(pPrev->nBits);
+    }
+    else {
         bnNew.SetCompact(pindexPrev->nBits);
         nActualSpacing = pindexPrev->GetBlockTime() - pindexPrevPrev->GetBlockTime();
     }
@@ -90,14 +96,83 @@ uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader
 
 
     if (fFlashStake)
-        nInterval = params.nFposTargetTimespan / (nTS);
+        nInterval = params.nFposTargetTimespan / nTS;
     else if (fProofOfStake)
-        nInterval = params.nPosTargetTimespan / (nTS);
+        nInterval = params.nPosTargetTimespan / nTS;
     else
-        nInterval = params.nPowTargetTimespan / (nTS);
+        nInterval = params.nPowTargetTimespan / nTS;
 
-    bnNew *= ((nInterval - 1) * (nTS) + nActualSpacing + nActualSpacing);
-    bnNew /= ((nInterval + 1) * (nTS));
+    bnNew *= ((nInterval - 1) * nTS + nActualSpacing + nActualSpacing);
+    bnNew /= ((nInterval + 1) * nTS);
+
+    if (bnNew <= 0 || bnNew > bnTargetLimit)
+        bnNew = bnTargetLimit;
+
+    return bnNew.GetCompact();
+}
+
+uint32_t GetNextTargetRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake)
+{
+    arith_uint256 bnTargetLimit;
+    int64_t nActualSpacing;
+    int nTS;
+    arith_uint256 bnNew;
+
+    bool fFlashStake = false;
+
+    // Gets first previous block (PoW/PoS).
+    const CBlockIndex* pindexPrev = GetLastBlockIndex(pindexLast, fProofOfStake);
+
+    if (fProofOfStake) // PoS or FPoS block
+    {
+        if (params.IsFlashStake(pblock->nTime)) {
+            fFlashStake = true;
+            bnTargetLimit = UintToArith256(params.fposLimit);
+            nTS = params.nFposTargetSpacing;
+        }
+        else {
+            bnTargetLimit = UintToArith256(params.posLimit);
+            nTS = params.nPosTargetSpacing;
+        }
+
+        // Gets two previous same algorithm (PoS or FPoS) blocks.
+        const CBlockIndex* pPrevSameAlgo = GetLastBlockIndex2(pindexPrev, fFlashStake);
+        const CBlockIndex* pPrevPrevSameAlgo = GetLastBlockIndex2(pPrevSameAlgo->pprev, fFlashStake);
+
+        nActualSpacing = pPrevSameAlgo->GetBlockTime() - pPrevPrevSameAlgo->GetBlockTime();
+        // Makes sure that time spacing between consecutive
+        // PoS/FPoS periods is removed from nActualSpacing final value.
+        // Additionally slows down target adjustment in case of very large
+        // block spacing (higher than 1h) for all PoS blocks.
+        nActualSpacing %= 3600;
+        bnNew.SetCompact(pPrevSameAlgo->nBits);
+    }
+    else // PoW block
+    {
+        bnTargetLimit = UintToArith256(params.powLimit);
+        nTS = params.nPowTargetSpacing;
+
+        // Gets second PoW block.
+        const CBlockIndex* pindexPrevPrev = GetLastBlockIndex(pindexPrev->pprev, false);
+
+        nActualSpacing = pindexPrev->GetBlockTime() - pindexPrevPrev->GetBlockTime();
+        bnNew.SetCompact(pindexPrev->nBits);
+    }
+
+
+    // ppcoin: target change every block
+    // ppcoin: retarget with exponential moving toward target spacing
+    int64_t nInterval;
+
+    if (fFlashStake)
+        nInterval = params.nFposTargetTimespan / nTS;
+    else if (fProofOfStake)
+        nInterval = params.nPosTargetTimespan / nTS;
+    else
+        nInterval = params.nPowTargetTimespan / nTS;
+
+    bnNew *= ((nInterval - 1) * nTS + nActualSpacing + nActualSpacing);
+    bnNew /= ((nInterval + 1) * nTS);
 
     if (bnNew <= 0 || bnNew > bnTargetLimit)
         bnNew = bnTargetLimit;

@@ -14,8 +14,10 @@ class CBlockHeader;
 class CBlockIndex;
 class uint256;
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L111
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L111
 uint32_t GetNextTargetRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake);
+uint32_t GetNextTargetRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake);
+uint32_t GetNextTargetRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::Params& params, bool fProofOfStake);
 
 // [PINK] Replace it and remove
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&);

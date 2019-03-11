@@ -20,7 +20,7 @@
  * current network-adjusted time before the block will be accepted.
  */
 // [PINK] The same as FutureDrift in consensus.params. Remove it??
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L47
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L47
 static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 10 * 60;
 
 /**
@@ -172,7 +172,7 @@ enum BlockStatus: uint32_t {
 
     BLOCK_OPT_WITNESS        =  128, //!< block data in blk*.data was received with a witness-enforcing client
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1131
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1131
     BLOCK_PROOF_OF_STAKE     =  256,  //! is proof-of-stake block
     BLOCK_STAKE_ENTROPY      =  512,  //! entropy bit for stake modifier
     BLOCK_STAKE_MODIFIER     = 1024,  //! regenerated stake modifier
@@ -207,7 +207,7 @@ public:
     //! Byte offset within rev?????.dat where this block's undo data is stored
     unsigned int nUndoPos;
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1122
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1124
     // [PINK] Trust score of block chain
     arith_uint256 nChainTrust;
 
@@ -227,7 +227,7 @@ public:
     //! Verification status of this block. See enum BlockStatus
     uint32_t nStatus;
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1136
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1138
     // [PINK] hash modifier of proof-of-stake
     // [PINK] TODO: Change from uint64_t to uint256
     uint64_t nStakeModifier;
@@ -254,14 +254,14 @@ public:
         nFile = 0;
         nDataPos = 0;
         nUndoPos = 0;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1159
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1161
         nChainTrust = arith_uint256();
         // [PINK] TODO: remove it.
         nChainWork = arith_uint256();
         nTx = 0;
         nChainTx = 0;
         nStatus = 0;
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1163
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1165
         nStakeModifier = 0;
         nSequenceId = 0;
         nTimeMax = 0;
@@ -331,19 +331,19 @@ public:
         return GetBlockHeader().GetPoWHash();
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1272
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1274
     bool IsProofOfWork() const
     {
         return !IsProofOfStake();
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1277
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1279
     bool IsProofOfStake() const
     {
         return (nStatus & BLOCK_PROOF_OF_STAKE);
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1282
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1284
     bool IsFPOS(bool nFlash) const
     {
         if (IsProofOfStake()) {
@@ -353,19 +353,19 @@ public:
         return false;
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1290
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1292
     void SetProofOfStake()
     {
         nStatus |= BLOCK_PROOF_OF_STAKE;
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1300
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1302
     unsigned int GetStakeEntropyBit() const
     {
         return ((nStatus & BLOCK_STAKE_ENTROPY) >> 1);
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1308
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1310
     bool GeneratedStakeModifier() const
     {
         return (nStatus & BLOCK_STAKE_MODIFIER);
@@ -378,7 +378,7 @@ public:
             nStatus |= BLOCK_STAKE_MODIFIER;
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1243
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1245
     int64_t GetPastTimeLimit() const
     {
         return GetMedianTimePast();
@@ -465,9 +465,9 @@ int64_t GetBlockProofEquivalentTime(const CBlockIndex& to, const CBlockIndex& fr
 /** Find the forking point between two chain tips. */
 const CBlockIndex* LastCommonAncestor(const CBlockIndex* pa, const CBlockIndex* pb);
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1231
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1233
 arith_uint256 GetBlockTrust(const CBlockIndex& block, bool isNew = false);
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L127
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L129
 void GetModTrust(arith_uint256& bnStakeTrust, arith_uint256& bnTarget, CBlockIndex* pindexBase, const uint32_t nBlockTime, bool isPos, bool isNew);
 
 /** Used to marshal pointers into hashes for db storage. */
@@ -494,8 +494,8 @@ public:
 
         READWRITE(VARINT(nHeight, VarIntMode::NONNEGATIVE_SIGNED));
         READWRITE(VARINT(nStatus));
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L1376
-        // [PINK] TODO: Check if it's ok!
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L1378
+        // [PINK] TODO: Check if it's ok.
         READWRITE(VARINT(nStakeModifier));
         READWRITE(VARINT(nTx));
         if (nStatus & (BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO))
@@ -598,10 +598,10 @@ public:
     CBlockIndex* FindEarliestAtLeast(int64_t nTime) const;
 };
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L123
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L125
 // [PINK] TODO: Rewrite it as a static member of CBlockIndex or CChain class??
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L124
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L126
 // [PINK] TODO: Rewrite it as a static member of CBlockIndex or CChain class??
 const CBlockIndex* GetLastBlockIndex2(const CBlockIndex* pindex, bool fFlashStake);
 

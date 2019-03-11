@@ -13,7 +13,7 @@
 
 uint256 CBlockHeader::GetHash() const
 {
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L909
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L911
     return GetPoWHash();
 }
 
@@ -24,7 +24,7 @@ uint256 CBlockHeader::GetPoWHash() const
     return thash;
 }
 
-// [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L926
+// [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L928
 // Entropy bit for stake modifier if chosen by modifier
 uint64_t CBlockHeader::GetStakeEntropyBit() const
 {

@@ -98,13 +98,14 @@ struct Params {
     uint256 nMinimumChainWork;
     uint256 defaultAssumeValid;
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L54
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L54
+    // [PINK] TODO: rename it.
     uint32_t nHour1;
     uint32_t nHour2;
     uint32_t nHour3;
     uint32_t nHour4;
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.cpp#L1221
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.cpp#L1303
     bool IsFlashStake(uint32_t nTime) const
     {
         time_t rawtime;
@@ -122,7 +123,7 @@ struct Params {
         return bIsFlash;
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L47
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L47
     inline int64_t PastDrift(int64_t nTime) const { return nTime - 10 * 60; }   // up to 10 minutes from the past
     inline int64_t FutureDrift(int64_t nTime) const { return nTime + 10 * 60; } // up to 10 minutes from the future
 };

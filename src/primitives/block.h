@@ -84,7 +84,7 @@ public:
     // network and disk
     std::vector<CTransactionRef> vtx;
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L851
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L853
     // [PINK] block signature - signed by coin base txout[0]'s owner
     std::vector<unsigned char> vchBlockSig;
 
@@ -108,7 +108,7 @@ public:
     inline void SerializationOp(Stream& s, Operation ser_action) {
         READWRITEAS(CBlockHeader, *this);
         READWRITE(vtx);
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L879
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L881
         READWRITE(vchBlockSig);
     }
 
@@ -116,7 +116,7 @@ public:
     {
         CBlockHeader::SetNull();
         vtx.clear();
-        // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L897
+        // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L899
         vchBlockSig.clear();
         fChecked = false;
     }
@@ -133,25 +133,25 @@ public:
         return block;
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L936
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L938
     bool IsProofOfStake() const
     {
         return (vtx.size() > 1 && vtx[1]->IsCoinStake());
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L941
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L943
     bool IsProofOfWork() const
     {
         return !IsProofOfStake();
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L946
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L948
     std::pair<COutPoint, uint32_t> GetProofOfStake() const
     {
         return IsProofOfStake() ? std::make_pair(vtx[1]->vin[0].prevout, vtx[1]->nTime) : std::make_pair(COutPoint(), (uint32_t)0);
     }
 
-    // [PINK] https://github.com/Pink2Dev/Pink2/blob/master/src/main.h#L952
+    // [PINK] https://github.com/Pink2Dev/Pink2/blob/2.2.3.0/src/main.h#L954
     // [PINK] TODO: Check if it requires int64_t or we can use uint32_t
     int64_t GetMaxTransactionTime() const
     {
